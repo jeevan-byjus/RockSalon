@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460b25b7068634ba0b9a033c78306c32, type: 3}
+  m_Name: VisionTestGameInfo
+  m_EditorClassIdentifier: 
+  DummyData: '?'
+  Value:
+    GamePath: Assets/Games/container-tester-games/RncElevator
+    UsesLocalization: 0
+    GameID: VisionTest
+    SectionID: samplegame
+    AnalyticsID: 
+    RequiredTiles: 0
+    ContainerVersion: 1000011
+    AssetBundlingFolder: AssetsToBundle
+    LocalizationFolder: 
+    LocalizationURL: 
+    BundleScenes: 0
+    Scenes:
+    - Scenes/VisionTest.unity
+    Settings:
+      IsArcadeGame: 1
+      UsesOsmoworld: 0
+      URLSchemes: []
+      IOSScriptingDefineSymbols: []
+      AndroidScriptingDefineSymbols: []
+      DeviceSupport:
+        IPhoneSupport: 0
+        IPadSupport: 1
+        AmazonFireSupport: 1
+        LenovoSupport: 0
+        SupportedOrientations: 01000000
+        PreferredOrientation: 1
+      CustomHardware:
+        ImageName: 
+        TypeName: 
+        HeaderKey: 
+        HeaderCategory: 
+        Image: {fileID: 0}
+      CustomHUD:
+        SettingsIconOverrideColor: 
+        SettingsCircleOverrideColor: 
+      IAPSettings:
+        HeroImageName: 
+        IconImageName: 
+        UsesIAP: 0
+        iOSProductIdTrial: 
+        iOSProductIdUnlock: 
+        FireProductIdTrial: 
+        FireProductIdUnlock: 
+        CustomHeroImage: {fileID: 0}
+        CustomIconImage: {fileID: 0}
+        UnityOrganization: tangible-play
+        UnityProjectName: 
+        UnityCloudProjectId: 
+    Properties:
+      Title: My Game 1
+      BundleId: com.tangibleplay.osmo.game1
+      Version: 
+      VisionPrefix: 
+      Icon: {fileID: 2800000, guid: db7876c3a4f6043df85350ef62b9d53d, type: 3}
+      IsFreemiumGame: 0
+      IsSamplerCompatible: 1
+    APIKeyInfo:
+      OsmoSecretKey: 
+      OsmoDevKey: 
+      AndroidEncryptionKey: 
+      ExpectsSharedWrite: 0
+      CaptureUploadID: 
+      BugseeIOSKey: 
+      BugseeAndroidKey: 
+    AssetBundles:
+      ToPreloadFromGame: []
+      ToPreloadFromOsmo: []
+      ToUseFromOsmo: []
