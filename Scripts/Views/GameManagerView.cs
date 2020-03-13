@@ -2,6 +2,8 @@
 using System.Collections;
 using UnityEngine.UI;
 using Byjus.RockSalon.Ctrls;
+using DG.Tweening;
+using System;
 
 namespace Byjus.RockSalon.Views {
 
@@ -9,29 +11,27 @@ namespace Byjus.RockSalon.Views {
         [SerializeField] GameObject blueRodPrefab;
         [SerializeField] GameObject redCubePrefab;
 
-        public GameObject CreateBlueRod(Vector2 position) {
-            var go = Instantiate(blueRodPrefab, position, Quaternion.identity, transform);
-            return go;
+        public IGameManagerCtrl ctrl;
+
+        public void CreateCrystal(CrystalType type, Vector2 position, Action<GameObject> onCreateDone) {
+            var go = Instantiate(type == CrystalType.BLUE_CRYSTAL ? blueRodPrefab : redCubePrefab,
+                position, Quaternion.identity, transform);
+            onCreateDone(go);
         }
 
-        public GameObject CreateRedCube(Vector2 position) {
-            var go = Instantiate(redCubePrefab, position, Quaternion.identity, transform);
-            return go;
+        public void MoveCrystal(GameObject crystalGo, Vector2 newPosition, Action onMoveDone) {
+            crystalGo.transform.DOMove(newPosition, 0.5f).OnComplete(() => onMoveDone());
         }
 
-        public void MoveBlueRod(GameObject blueRod, Vector2 newPosition) {
-            throw new System.NotImplementedException();
-        }
-
-        public void MoveRedCube(GameObject redCube, Vector2 newPosition) {
-            throw new System.NotImplementedException();
+        public void RemoveCrystal(GameObject crystalGo, Action onRemoveDone) {
+            Destroy(crystalGo);
+            onRemoveDone();
         }
     }
 
     public interface IGameManagerView {
-        GameObject CreateBlueRod(Vector2 position);
-        GameObject CreateRedCube(Vector2 position);
-        void MoveBlueRod(GameObject blueRod, Vector2 newPosition);
-        void MoveRedCube(GameObject redCube, Vector2 newPosition);
+        void CreateCrystal(CrystalType type, Vector2 position, Action<GameObject> onCreateDone);
+        void MoveCrystal(GameObject crystalGo, Vector2 newPosition, Action onMoveDone);
+        void RemoveCrystal(GameObject crystalGo, Action onRemoveDone);
     }
 }

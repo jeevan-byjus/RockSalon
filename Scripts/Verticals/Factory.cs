@@ -19,6 +19,10 @@ namespace Byjus.RockSalon.Verticals {
             visionService.Init();
         }
 
+        public static void SetVisionService(IVisionService visionService) {
+            Factory.visionService = visionService;
+        }
+
         public static IVisionService GetVisionService() {
             return visionService;
         }

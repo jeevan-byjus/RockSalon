@@ -2,7 +2,7 @@
 using UnityEngine;
 
 #if CC_STANDALONE
-namespace Byjus.VisionTest.Externals {
+namespace Byjus.RockSalon.Externals {
     public class StandaloneExternalParent : MonoBehaviour {
         public HierarchyManager hierarchyManager;
 
