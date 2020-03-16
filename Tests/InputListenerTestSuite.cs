@@ -9,8 +9,7 @@ using Byjus.RockSalon.Views;
 using System;
 
 namespace Byjus.RockSalon.Tests {
-    public class GameTestSuite {
-        IGameManagerCtrl ctrl;
+    public class InputListenerTestSuite {
         IExtInputListener inputListener;
         TestView tv;
 
@@ -23,13 +22,11 @@ namespace Byjus.RockSalon.Tests {
             gameCtrl.Init();
             tv.Init();
 
-            ctrl = gameCtrl;
             inputListener = gameCtrl;
         }
 
         [TearDown]
         public void TearDown() {
-            ctrl = null;
             inputListener = null;
             tv = null;
         }
@@ -155,6 +152,19 @@ namespace Byjus.RockSalon.Tests {
         public void RemoveCrystal(GameObject crystalGo, Action onRemoveDone) {
             crystals.Remove(crystalGo);
             onRemoveDone();
+        }
+
+        public List<LevelData> GetAllLevels() {
+            var ld = ScriptableObject.CreateInstance<LevelData>();
+            ld.monsterIndex = 0;
+            ld.generic = true;
+            ld.totalReqt = 20;
+
+            return new List<LevelData>() { ld };
+        }
+
+        public void InstantiateLevel(LevelInfo level) {
+            Debug.Log("Instantiating " + level);
         }
     }
 }

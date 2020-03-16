@@ -9,6 +9,11 @@ namespace Byjus.RockSalon.Verticals {
     }
 
     public class StandaloneVisionService : IVisionService {
+
+        public void Init() {
+
+        }
+
         public List<ExtInput> GetVisionObjects() {
             var numRed = Random.Range(0, 5);
             var numBlue = Random.Range(0, 5);
@@ -30,11 +35,6 @@ namespace Byjus.RockSalon.Verticals {
                 });
             }
 
-
-            var str = "Sending input:\n";
-            foreach (var x in ret) { str += x.ToString() + "\n"; }
-            Debug.LogError(str);
-
             return ret;
         }
 
@@ -48,18 +48,14 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         Vector2 GetRandomPos() {
-            var x = Random.Range(-7, 7);
-            var y = Random.Range(-8, 8);
+            var x = Random.Range(-3.4f, 3.4f);
+            var y = Random.Range(-4.7f, 4.7f);
             return new Vector2(x, y);
         }
 
         bool ExistsPosition(Vector2 testPos, List<ExtInput> objs) {
             foreach (var obj in objs) { if (obj.position == testPos) { return true; } }
             return false;
-        }
-
-        public void Init() {
-
         }
     }
 
