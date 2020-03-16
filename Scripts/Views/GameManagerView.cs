@@ -9,6 +9,7 @@ using System.Collections.Generic;
 namespace Byjus.RockSalon.Views {
 
     public class GameManagerView : MonoBehaviour, IGameManagerView {
+        [SerializeField] SpriteRenderer bg;
         [SerializeField] GameObject blueCrystalPrefab;
         [SerializeField] GameObject redCrystalPrefab;
         [SerializeField] List<GameObject> monsterPrefabs;
@@ -24,7 +25,7 @@ namespace Byjus.RockSalon.Views {
         }
 
         public void MoveCrystal(GameObject crystalGo, Vector2 newPosition, Action onMoveDone) {
-            crystalGo.transform.DOMove(newPosition, 0.5f).OnComplete(() => onMoveDone());
+            crystalGo.transform.DOMove(newPosition, 0.4f).OnComplete(() => onMoveDone());
         }
 
         public void RemoveCrystal(GameObject crystalGo, Action onRemoveDone) {
@@ -33,7 +34,31 @@ namespace Byjus.RockSalon.Views {
         }
 
         public void OnSubmitPressed() {
+            ctrl.OnSubmitPressed();
+        }
 
+        public void OnCameraPlus() {
+            Camera.main.orthographicSize += 5;
+            var height = Camera.main.orthographicSize * 2;
+            var width = Camera.main.aspect * height;
+            bg.size = new Vector2(width, height);
+        }
+
+        public void OnCameraMinus() {
+            Camera.main.orthographicSize -= 5;
+            var height = Camera.main.orthographicSize * 2;
+            var width = Camera.main.aspect * height;
+            bg.size = new Vector2(width, height);
+        }
+
+        public void OnCrystalPlus() {
+            blueCrystalPrefab.transform.localScale += new Vector3(0.01f, 0.01f);
+            redCrystalPrefab.transform.localScale += new Vector3(0.01f, 0.01f);
+        }
+
+        public void OnCrystalMinus() {
+            blueCrystalPrefab.transform.localScale -= new Vector3(0.01f, 0.01f);
+            redCrystalPrefab.transform.localScale -= new Vector3(0.01f, 0.01f);
         }
 
         public List<LevelData> GetAllLevels() {
@@ -45,6 +70,10 @@ namespace Byjus.RockSalon.Views {
             level.monster = Instantiate(monsterPrefab, transform);
             gameText.text = level.GetReqtString();
         }
+
+        public void DestroyLevel(LevelInfo level) {
+            Destroy(level.monster.gameObject);
+        }
     }
 
     public interface IGameManagerView {
@@ -53,5 +82,6 @@ namespace Byjus.RockSalon.Views {
         void MoveCrystal(GameObject crystalGo, Vector2 newPosition, Action onMoveDone);
         void RemoveCrystal(GameObject crystalGo, Action onRemoveDone);
         void InstantiateLevel(LevelInfo level);
+        void DestroyLevel(LevelInfo level);
     }
 }

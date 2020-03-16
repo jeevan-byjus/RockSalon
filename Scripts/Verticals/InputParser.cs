@@ -7,10 +7,11 @@ namespace Byjus.RockSalon.Verticals {
     public class InputParser : MonoBehaviour {
         public IExtInputListener inputListener;
 
+        const float POINT_COMPARE_EPSILON_PERCENT = 0.1f / 100;
+        const float SAME_POINT_DIST_THRESHOLD_PERCENT = 8.0f / 100;
+
         IVisionService visionService;
-
         List<ExtInput> currentObjects;
-
         int inputCount;
 
         public void Init() {
@@ -35,6 +36,9 @@ namespace Byjus.RockSalon.Verticals {
 
         void OnInput(List<ExtInput> objs) {
             Segregate(objs, out List<ExtInput> extraOld, out List<ExtInput> extraNew);
+
+            extraOld.Sort((x, y) => (int) (Vector2.Distance(x.position, Vector2.zero) - Vector2.Distance(y.position, Vector2.zero)));
+            extraNew.Sort((x, y) => (int) (Vector2.Distance(x.position, Vector2.zero) - Vector2.Distance(y.position, Vector2.zero)));
 
             foreach (var newO in extraNew) {
                 // find closest old object (threshold 3 dist), indicating a move
@@ -70,7 +74,7 @@ namespace Byjus.RockSalon.Verticals {
             foreach (var old in currentObjects) {
                 bool found = false;
                 foreach (var newO in extraNew) {
-                    if (old.type == newO.type && old.position == newO.position) {
+                    if (old.type == newO.type && EqualPosition(old.position, newO.position)) {
                         found = true;
                         extraNew.Remove(newO);
                         break;
@@ -83,20 +87,33 @@ namespace Byjus.RockSalon.Verticals {
             }
         }
 
+        bool EqualPosition(Vector2 point1, Vector2 point2) {
+            var widthEpsilon = CameraUtil.Width(Camera.main) * POINT_COMPARE_EPSILON_PERCENT;
+            var heightEpsilon = CameraUtil.Height(Camera.main) * POINT_COMPARE_EPSILON_PERCENT;
+
+            return Mathf.Abs(point1.x - point2.x) < widthEpsilon &&
+                Mathf.Abs(point1.y - point2.y) < heightEpsilon;
+        }
+
         ExtInput FindClosest(ExtInput obj, List<ExtInput> targetObjs) {
-            float minDist = 3.0f;
+            float minWidth = CameraUtil.Width(Camera.main) * SAME_POINT_DIST_THRESHOLD_PERCENT;
+            float minHeight = CameraUtil.Height(Camera.main) * SAME_POINT_DIST_THRESHOLD_PERCENT;
+            float minDist = Mathf.Sqrt(Mathf.Pow(minWidth, 2) + Mathf.Pow(minHeight, 2));
+            Debug.LogError("Min Width: " + minWidth + ", Min Height: " + minHeight + " Min Dist required: " + minDist);
             ExtInput min = null;
 
             foreach (var old in targetObjs) {
                 if (old.type != obj.type) { continue; }
 
                 var dist = Vector2.Distance(obj.position, old.position);
+                Debug.LogError("Dist between obj: " + obj + ", and old: " + old + ", dist: " + dist);
                 if (dist < minDist) {
                     min = old;
                     minDist = dist;
                 }
             }
 
+            Debug.LogError("Returning " + min + " for " + obj);
             return min;
         }
 

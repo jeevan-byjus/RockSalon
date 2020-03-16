@@ -85,6 +85,8 @@ namespace Byjus.RockSalon.Ctrls {
         public void OnSubmitPressed() {
             // validate crystals
             // if proper, show win text, or congrats text
+            // else, show dissatisfaction text
+            view.DestroyLevel(allLevels[currLevelId]);
             LoadLevel((currLevelId + 1) % allLevels.Count);
         }
 

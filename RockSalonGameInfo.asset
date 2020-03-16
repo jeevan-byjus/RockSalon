@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 460b25b7068634ba0b9a033c78306c32, type: 3}
-  m_Name: VisionTestGameInfo
+  m_Name: RockSalonGameInfo
   m_EditorClassIdentifier: 
   DummyData: '?'
   Value:
-    GamePath: Assets/Games/container-tester-games/RncElevator
+    GamePath: Assets/Games/container-tester-games/RockSalon
     UsesLocalization: 0
-    GameID: VisionTest
-    SectionID: samplegame
+    GameID: RockSalon
+    SectionID: gamepod
     AnalyticsID: 
     RequiredTiles: 0
     ContainerVersion: 1000011
@@ -26,7 +26,7 @@ MonoBehaviour:
     LocalizationURL: 
     BundleScenes: 0
     Scenes:
-    - Scenes/VisionTest.unity
+    - Scenes/RockSalon.unity
     Settings:
       IsArcadeGame: 1
       UsesOsmoworld: 0
@@ -63,8 +63,8 @@ MonoBehaviour:
         UnityProjectName: 
         UnityCloudProjectId: 
     Properties:
-      Title: My Game 1
-      BundleId: com.tangibleplay.osmo.game1
+      Title: Rock Salon
+      BundleId: com.byjus.k3.rocksalon
       Version: 
       VisionPrefix: 
       Icon: {fileID: 2800000, guid: db7876c3a4f6043df85350ef62b9d53d, type: 3}

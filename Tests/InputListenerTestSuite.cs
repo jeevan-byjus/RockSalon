@@ -166,5 +166,9 @@ namespace Byjus.RockSalon.Tests {
         public void InstantiateLevel(LevelInfo level) {
             Debug.Log("Instantiating " + level);
         }
+
+        public void DestroyLevel(LevelInfo level) {
+            Debug.Log("Destroying " + level);
+        }
     }
 }

@@ -30,7 +30,7 @@ namespace Byjus.RockSalon.Verticals {
             for (int i = 0; i < numRed; i++) {
                 ret.Add(new ExtInput {
                     type = TileType.RED_CUBE,
-                    id = (numBlue + i) + 1000,
+                    id = i + 1000,
                     position = GeneratePos(ret)
                 });
             }

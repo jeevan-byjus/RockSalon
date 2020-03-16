@@ -64,12 +64,16 @@ namespace Byjus.RockSalon.Externals {
 
         public List<ExtInput> GetVisionObjects() {
             var aliveObjs = visionHelper.tangibleManager.AliveObjects;
+            
             var ret = new List<ExtInput>();
             foreach (var obj in aliveObjs) {
-                if (obj.Id < 10) {
-                    ret.Add(new ExtInput { id = obj.Id, type = ExtInput.TileType.BLUE_ROD });
+                var pos = new Vector2(obj.Location.X, obj.Location.Y);
+                var worldPos = Camera.main.ScreenToWorldPoint(pos);
+
+                if (obj.Id < 10) {    
+                    ret.Add(new ExtInput { id = obj.Id, type = TileType.BLUE_ROD, position = worldPos });
                 } else {
-                    ret.Add(new ExtInput { id = obj.Id, type = ExtInput.TileType.RED_CUBE });
+                    ret.Add(new ExtInput { id = obj.Id, type = TileType.RED_CUBE, position = worldPos });
                 }
             }
             return ret;

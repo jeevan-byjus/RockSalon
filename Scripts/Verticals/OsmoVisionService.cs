@@ -12,9 +12,14 @@ using Osmo.SDK.Vision;
 namespace Byjus.RockSalon.Verticals {
     public class OsmoVisionService : MonoBehaviour, IVisionService {
         string lastJson;
+        BoundingBox visionBoundingBox;
+        float frameTheta;
 
         public void Init() {
             lastJson = "{}";
+            visionBoundingBox = new BoundingBox(new List<Point> { new Point(-56, 81), new Point(91, 82), new Point(91, -116), new Point(-56, -116) });
+            frameTheta = CalculateAngle(visionBoundingBox);
+
             VisionConnector.Register(
                     apiKey: API.Key,
                     objectName: "OsmoVisionServiceView",
@@ -35,53 +40,41 @@ namespace Byjus.RockSalon.Verticals {
                 var output = JsonUtility.FromJson<JOutput>(lastJson);
                 if (output == null || output.items == null) {
                     Debug.LogError("Returning empty for json " + lastJson);
+                    return new List<ExtInput>();
                 }
 
-                if (!output.foundFrame) {
-                    output.frameCorners = new List<Point> { new Point(-56, 81), new Point(91, 82), new Point(91, -116), new Point(-56, -116) };
-                }
-
-                BoundingBox frameBox = new BoundingBox(output.frameCorners);
-                float frameTheta = CalculateAngle(frameBox);
                 
+                Debug.LogError("Json: " + lastJson);
+
                 List<JItem> transformedCubes = output.items.Select(cube => {
                     var transformedCube = new JItem(cube);
-                    transformedCube.pt = GetRelativePos(frameTheta, frameBox.bottomLeft, cube.pt);
+                    transformedCube.pt = GetRelativePos(frameTheta, visionBoundingBox.bottomLeft, cube.pt);
                     return transformedCube;
                 }).ToList();
 
                 var ret = new List<ExtInput>();
                 int numBlues = 0, numReds = 0;
                 foreach (var item in output.items) {
+                    var hwPos = new Vector2(item.pt.x, item.pt.y);
+                    var pos = GetPositionAccordingToCamera(hwPos);
+                    Debug.LogError("Item: " + item + ", hwPos: " + hwPos + ", WorldPos: " + pos);
+
                     if (string.Equals(item.color, "blue")) {
+                        ret.Add(new ExtInput { id = numBlues++, type = TileType.BLUE_ROD, position = pos  });
                         numBlues++;
                     } else if (string.Equals(item.color, "red")) {
+                        ret.Add(new ExtInput { id = 1000 + numReds++, type = TileType.RED_CUBE, position = pos });
                         numReds++;
                     }
                 }
 
-                //numBlues = Mathf.CeilToInt(numBlues / 10);
-                //Debug.LogError("Returning vision objects: Number of Blues " + numBlues + ", Number of reds: " + numReds);
-
-                for (int i = 0; i < numBlues; i++) {
-                    ret.Add(new ExtInput {
-                        id = i,
-                        type = TileType.BLUE_ROD,
-                        position = new Vector2()
-                    });
-                }
-                for (int i = 0; i < numReds; i++) { ret.Add(new ExtInput { id = (i + numBlues) + 1000, type = TileType.RED_CUBE }); }
-
+                Debug.LogError("\n\n");
                 return ret;
 
-            } catch (System.Exception e) {
+            } catch (Exception e) {
                 Debug.LogError("Error while parsing lastJson: " + lastJson + "\nException: " + e.Message);
                 return new List<ExtInput>();
             }
-        }
-
-        private Vector2 PointToVec(Point point) {
-            return new Vector2(point.x, point.y);
         }
 
         private Point VecToPoint(Vector2 vec) {
@@ -106,18 +99,24 @@ namespace Byjus.RockSalon.Verticals {
                     globalPos.y - relativeOrigin.y)));
             return VecToPoint(playmatPosition);
         }
-        private Point GetGlobalPos(float theta, Point relativeOrigin, Point relativePos) {
-            Quaternion rotation = Quaternion.AngleAxis(theta, new Vector3(0, 0, 1));
-            Vector2 globalPosition = PointToVec(relativeOrigin) + (Vector2) (rotation * (new Vector3(relativePos.x, relativePos.y, 0)));
-            return VecToPoint(globalPosition);
+
+        private Vector2 GetPositionAccordingToCamera(Vector2 point) {
+            var height = Camera.main.orthographicSize * 2;
+            var width = Camera.main.aspect * height;
+
+            var hwWidth = visionBoundingBox.topRight.x - visionBoundingBox.topLeft.x;
+            var widthRatio = width / hwWidth;
+
+            var hwHeight = visionBoundingBox.topLeft.y - visionBoundingBox.bottomLeft.y;
+            var heightRatio = height / hwHeight;
+
+            return new Vector2(point.x * widthRatio, point.y * heightRatio);
         }
     }
 
     [Serializable]
     public class JOutput {
         public List<JItem> items;
-        public bool foundFrame;
-        public List<Point> frameCorners;
     }
 
     [Serializable]
@@ -144,6 +143,10 @@ namespace Byjus.RockSalon.Verticals {
         public Point(float x, float y) {
             this.x = x;
             this.y = y;
+        }
+
+        public override string ToString() {
+            return x + ", " + y;
         }
     }
 

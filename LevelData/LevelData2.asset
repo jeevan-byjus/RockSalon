@@ -15,5 +15,5 @@ MonoBehaviour:
   monsterIndex: 1
   generic: 0
   totalReqt: 0
-  numBlue: 20
-  numRed: 7
+  numBlue: 30
+  numRed: 2
