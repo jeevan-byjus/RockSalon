@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Byjus.RockSalon.Util;
+using UnityEngine.UI;
 
 #if !CC_STANDALONE
 using Osmo.SDK;
@@ -11,14 +13,31 @@ using Osmo.SDK.Vision;
 
 namespace Byjus.RockSalon.Verticals {
     public class OsmoVisionService : MonoBehaviour, IVisionService {
+        [SerializeField] Text jsonText;
+
         string lastJson;
         BoundingBox visionBoundingBox;
         float frameTheta;
+        bool jsonVisible;
 
-        public float ratio = 1f;
+        float ratio = 0.6f;
+
+        public void ToggleJsonText() {
+            jsonVisible = !jsonVisible;
+            jsonText.gameObject.SetActive(jsonVisible);
+        }
+
+        public void OnRatioPlus() {
+            ratio += 0.05f;
+        }
+
+        public void OnRatioMinus() {
+            ratio -= 0.05f;
+        }
 
         public void Init() {
             lastJson = "{}";
+            jsonText.text = lastJson;
             visionBoundingBox = new BoundingBox(new List<Point> { new Point(-56, 81), new Point(91, 82), new Point(91, -116), new Point(-56, -116) });
             frameTheta = CalculateAngle(visionBoundingBox);
 
@@ -35,6 +54,7 @@ namespace Byjus.RockSalon.Verticals {
         public void DispatchEvent(string json) {
             if (json == null) { return; }
             lastJson = json;
+            jsonText.text = lastJson;
         }
 
         public List<ExtInput> GetVisionObjects() {
@@ -44,15 +64,12 @@ namespace Byjus.RockSalon.Verticals {
                     Debug.LogError("Returning empty for json " + lastJson);
                     return new List<ExtInput>();
                 }
-
                 
                 Debug.LogError("Json: " + lastJson);
 
-                List<JItem> transformedCubes = output.items.Select(cube => {
-                    var transformedCube = new JItem(cube);
-                    transformedCube.pt = GetRelativePos(frameTheta, visionBoundingBox.bottomLeft, cube.pt);
-                    return transformedCube;
-                }).ToList();
+                foreach (var it in output.items) {
+                    it.pt = GetRelativePos(frameTheta, visionBoundingBox.bottomLeft, it.pt);
+                }
 
                 var ret = new List<ExtInput>();
                 int numBlues = 0, numReds = 0;
@@ -63,10 +80,8 @@ namespace Byjus.RockSalon.Verticals {
 
                     if (string.Equals(item.color, "blue")) {
                         ret.Add(new ExtInput { id = numBlues++, type = TileType.BLUE_ROD, position = pos  });
-                        numBlues++;
                     } else if (string.Equals(item.color, "red")) {
                         ret.Add(new ExtInput { id = 1000 + numReds++, type = TileType.RED_CUBE, position = pos });
-                        numReds++;
                     }
                 }
 
@@ -103,14 +118,11 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         private Vector2 GetPositionAccordingToCamera(Vector2 point) {
-            var height = Camera.main.orthographicSize * 2;
-            var width = Camera.main.aspect * height;
-
             var hwWidth = visionBoundingBox.topRight.x - visionBoundingBox.topLeft.x;
-            var widthRatio = width / hwWidth * ratio;
+            var widthRatio = CameraUtil.MainWidth() / hwWidth * ratio;
 
             var hwHeight = visionBoundingBox.topLeft.y - visionBoundingBox.bottomLeft.y;
-            var heightRatio = height / hwHeight * ratio;
+            var heightRatio = CameraUtil.MainHeight() / hwHeight * ratio;
 
             return new Vector2(point.x * widthRatio, point.y * heightRatio);
         }

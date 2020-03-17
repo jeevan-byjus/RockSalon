@@ -17,8 +17,6 @@ namespace Byjus.RockSalon.Views {
         [SerializeField] List<LevelData> levels;
         [SerializeField] Text gameText;
 
-        public OsmoVisionService osmoVisionService;
-
         public IGameManagerCtrl ctrl;
 
         public void CreateCrystal(CrystalType type, Vector2 position, Action<GameObject> onCreateDone) {
@@ -52,14 +50,6 @@ namespace Byjus.RockSalon.Views {
             var height = Camera.main.orthographicSize * 2;
             var width = Camera.main.aspect * height;
             bg.size = new Vector2(width, height);
-        }
-
-        public void OnCrystalPlus() {
-            osmoVisionService.ratio += 0.1f;
-        }
-
-        public void OnCrystalMinus() {
-            osmoVisionService.ratio -= 0.1f;
         }
 
         public List<LevelData> GetAllLevels() {

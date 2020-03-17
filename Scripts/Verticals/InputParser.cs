@@ -88,16 +88,16 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         bool EqualPosition(Vector2 point1, Vector2 point2) {
-            var widthEpsilon = CameraUtil.Width(Camera.main) * POINT_COMPARE_EPSILON_PERCENT;
-            var heightEpsilon = CameraUtil.Height(Camera.main) * POINT_COMPARE_EPSILON_PERCENT;
+            var widthEpsilon = CameraUtil.MainWidth() * POINT_COMPARE_EPSILON_PERCENT;
+            var heightEpsilon = CameraUtil.MainHeight() * POINT_COMPARE_EPSILON_PERCENT;
 
             return Mathf.Abs(point1.x - point2.x) < widthEpsilon &&
                 Mathf.Abs(point1.y - point2.y) < heightEpsilon;
         }
 
         ExtInput FindClosest(ExtInput obj, List<ExtInput> targetObjs) {
-            float minWidth = CameraUtil.Width(Camera.main) * SAME_POINT_DIST_THRESHOLD_PERCENT;
-            float minHeight = CameraUtil.Height(Camera.main) * SAME_POINT_DIST_THRESHOLD_PERCENT;
+            float minWidth = CameraUtil.MainWidth() * SAME_POINT_DIST_THRESHOLD_PERCENT;
+            float minHeight = CameraUtil.MainHeight() * SAME_POINT_DIST_THRESHOLD_PERCENT;
             float minDist = Mathf.Sqrt(Mathf.Pow(minWidth, 2) + Mathf.Pow(minHeight, 2));
             Debug.LogError("Min Width: " + minWidth + ", Min Height: " + minHeight + " Min Dist required: " + minDist);
             ExtInput min = null;

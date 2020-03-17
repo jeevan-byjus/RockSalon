@@ -8,11 +8,14 @@ namespace Byjus.RockSalon.Util {
     }
 
     public class CameraUtil {
-        public static float Width(Camera cam) {
-            return Height(cam) * cam.aspect;
+
+        public static float MainWidth() {
+            var cam = Camera.main;
+            return MainHeight() * cam.aspect;
         }
 
-        public static float Height(Camera cam) {
+        public static float MainHeight() {
+            var cam = Camera.main;
             return cam.orthographicSize * 2;
         }
 
