@@ -1,13 +1,10 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Byjus.RockSalon.Util;
 using UnityEngine.UI;
 
 #if !CC_STANDALONE
-using Osmo.SDK;
 using Osmo.SDK.VisionPlatformModule;
 using Osmo.SDK.Vision;
 
@@ -17,7 +14,6 @@ namespace Byjus.RockSalon.Verticals {
 
         string lastJson;
         BoundingBox visionBoundingBox;
-        float frameTheta;
         bool jsonVisible;
 
         float ratio = 0.6f;
@@ -28,18 +24,17 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         public void OnRatioPlus() {
-            ratio += 0.05f;
+            ratio += 0.1f;
         }
 
         public void OnRatioMinus() {
-            ratio -= 0.05f;
+            ratio -= 0.1f;
         }
 
         public void Init() {
             lastJson = "{}";
-            jsonText.text = lastJson;
-            visionBoundingBox = new BoundingBox(new List<Point> { new Point(-56, 81), new Point(91, 82), new Point(91, -116), new Point(-56, -116) });
-            frameTheta = CalculateAngle(visionBoundingBox);
+            //jsonText.text = lastJson;
+            visionBoundingBox = new BoundingBox(new List<Vector2> { new Vector2(-90, 90), new Vector2(100, 90), new Vector2(190, -200), new Vector2(-150, -200) });
 
             VisionConnector.Register(
                     apiKey: API.Key,
@@ -54,7 +49,7 @@ namespace Byjus.RockSalon.Verticals {
         public void DispatchEvent(string json) {
             if (json == null) { return; }
             lastJson = json;
-            jsonText.text = lastJson;
+            //jsonText.text = lastJson;
         }
 
         public List<ExtInput> GetVisionObjects() {
@@ -64,67 +59,30 @@ namespace Byjus.RockSalon.Verticals {
                     Debug.LogError("Returning empty for json " + lastJson);
                     return new List<ExtInput>();
                 }
-                
-                Debug.LogError("Json: " + lastJson);
 
-                foreach (var it in output.items) {
-                    it.pt = GetRelativePos(frameTheta, visionBoundingBox.bottomLeft, it.pt);
-                }
+                string outS = "Number of items: " + output.items.Count + "\n";
 
                 var ret = new List<ExtInput>();
                 int numBlues = 0, numReds = 0;
                 foreach (var item in output.items) {
-                    var hwPos = new Vector2(item.pt.x, item.pt.y);
-                    var pos = GetPositionAccordingToCamera(hwPos);
-                    Debug.LogError("Item: " + item + ", hwPos: " + hwPos + ", WorldPos: " + pos);
+                    var pos = visionBoundingBox.GetScreenPoint(item.pt);
+                    outS += "Item: " + item + ", screen position: " + pos + "\n";
 
                     if (string.Equals(item.color, "blue")) {
-                        ret.Add(new ExtInput { id = numBlues++, type = TileType.BLUE_ROD, position = pos  });
+                        ret.Add(new ExtInput { id = numBlues++, type = TileType.BLUE_ROD, position = pos });
                     } else if (string.Equals(item.color, "red")) {
                         ret.Add(new ExtInput { id = 1000 + numReds++, type = TileType.RED_CUBE, position = pos });
                     }
                 }
 
-                Debug.LogError("\n\n");
+                jsonText.text = outS;
+
                 return ret;
 
             } catch (Exception e) {
                 Debug.LogError("Error while parsing lastJson: " + lastJson + "\nException: " + e.Message);
                 return new List<ExtInput>();
             }
-        }
-
-        private Point VecToPoint(Vector2 vec) {
-            return new Point(vec.x, vec.y);
-        }
-
-        private float CalculateAngle(BoundingBox boundingBox) {
-            Vector2 top = new Vector2(boundingBox.topRight.x - boundingBox.topLeft.x,
-                boundingBox.topRight.y - boundingBox.topLeft.y);
-            Vector2 bottom = new Vector2(boundingBox.bottomRight.x - boundingBox.bottomLeft.x,
-                boundingBox.bottomRight.y - boundingBox.bottomLeft.y);
-            float angleTop = Mathf.Rad2Deg * Mathf.Atan2(top.y, top.x);
-            float angleBottom = Mathf.Rad2Deg * Mathf.Atan2(bottom.y, bottom.x);
-            float angle = (angleTop + angleBottom) / 2;
-            return angle;
-        }
-
-        private Point GetRelativePos(float theta, Point relativeOrigin, Point globalPos) {
-            Quaternion rotation = Quaternion.AngleAxis(theta, new Vector3(0, 0, 1));
-            Vector2 playmatPosition = (Vector2) (Quaternion.Inverse(rotation)
-                * (Vector3) (new Vector2(globalPos.x - relativeOrigin.x,
-                    globalPos.y - relativeOrigin.y)));
-            return VecToPoint(playmatPosition);
-        }
-
-        private Vector2 GetPositionAccordingToCamera(Vector2 point) {
-            var hwWidth = visionBoundingBox.topRight.x - visionBoundingBox.topLeft.x;
-            var widthRatio = CameraUtil.MainWidth() / hwWidth * ratio;
-
-            var hwHeight = visionBoundingBox.topLeft.y - visionBoundingBox.bottomLeft.y;
-            var heightRatio = CameraUtil.MainHeight() / hwHeight * ratio;
-
-            return new Vector2(point.x * widthRatio, point.y * heightRatio);
         }
     }
 
@@ -147,6 +105,10 @@ namespace Byjus.RockSalon.Verticals {
             id = other.id;
             pt = other.pt;
         }
+
+        public override string ToString() {
+            return "Color: " + color + ", id: " + id + ", pos: (" + pt + ")";
+        }
     }
 
     [Serializable]
@@ -164,22 +126,76 @@ namespace Byjus.RockSalon.Verticals {
         }
     }
 
-    [Serializable]
     public class BoundingBox {
-        public Point topLeft;
-        public Point topRight;
-        public Point bottomRight;
-        public Point bottomLeft;
+        public Vector2 topLeftRef;
+        public Vector2 newTL;
+        public Vector2 newTR;
+        public Vector2 newBL;
+        public Vector2 newBR;
 
-        public BoundingBox(List<Point> points) {
-            topLeft = points[0];
-            topRight = points[1];
-            bottomRight = points[2];
-            bottomLeft = points[3];
+        public float topWidth;
+        public float bottomWidth;
+        public float height;
+
+        public BoundingBox(List<Vector2> points) {
+            topLeftRef = points[0];
+            newTL = GetRelativePosFromTL(points[0]);
+            newTR = GetRelativePosFromTL(points[1]);
+            newBR = GetRelativePosFromTL(points[2]);
+            newBL = GetRelativePosFromTL(points[3]);
+
+            topWidth = newTR.x - newTL.x;
+            bottomWidth = newBR.x - newBL.x;
+            height = newTR.y - newBR.y;
         }
 
         override public string ToString() {
-            return topLeft + ", " + topRight + ", " + bottomRight + ", " + bottomLeft;
+            return newTL + ", " + newTR + ", " + newBR + ", " + newBL;
+        }
+
+        public Vector2 GetRelativePosFromTL(Vector2 point) {
+            return point - topLeftRef;
+        }
+
+        // w3 = ( w1 * h - w1 * y + w2 * y ) / h
+        public float GetWidthAtYDist(float y) {
+            var width = (topWidth * height - topWidth * y + bottomWidth * y) / height;
+            return width;
+        }
+
+
+        public float GetLeftMostX(float y) {
+            var x = newTL.x + (y - newTL.y) * (newBL.x - newTL.x) / (newBL.y - newTL.y);
+            return x;
+        }
+        // by slope of 2 points formula
+        public float GetDistFromLeft(Vector2 relPoint) {
+            var leftPoint = GetLeftMostX(relPoint.y); 
+            var dist = relPoint.x - leftPoint;
+            return dist;
+        }
+
+        public Vector2 GetScreenPoint(Point point) {
+            var vecPoint = new Vector2(point.x, point.y);
+            var relPoint = GetRelativePosFromTL(vecPoint);
+            var widthAtPoint = GetWidthAtYDist(-relPoint.y);
+            var xDist = GetDistFromLeft(relPoint);
+
+            var camW = CameraUtil.MainWidth();
+            var camH = CameraUtil.MainHeight();
+
+            // pos from top left
+            var scrX = camW * xDist / widthAtPoint;
+            var scrY = camH * relPoint.y / height;
+
+            Debug.Log("Point: " + point + ", relPoint: " + relPoint + ", Width at point: " + widthAtPoint + ", xDist: " + xDist + ", camW: " + camW + ", camH: " + camH + ", scrX: " + scrX + " scrY: " + scrY);
+
+            // pos from center
+            scrX = -(camW / 2) + scrX;
+            scrY = (camH / 2) + scrY;
+
+
+            return new Vector2(scrX, scrY);
         }
     }
 }
