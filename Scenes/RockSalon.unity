@@ -482,6 +482,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af8ac9be80efe4fe3ab275af3986c53d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ratio: 1
 --- !u!1 &557561189
 GameObject:
   m_ObjectHideFlags: 0
@@ -1422,7 +1423,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88875829c1fc34de896dc4f3565f207d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bg: {fileID: 0}
+  bg: {fileID: 87247330}
   blueCrystalPrefab: {fileID: 8245009307463044708, guid: c12e66cb183be41e080b3bfa24b112aa,
     type: 3}
   redCrystalPrefab: {fileID: 1165567331797386, guid: cf0b2070effed4e8bb23d222b5fbd32e,
@@ -1438,6 +1439,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 31333733c3af641b9b3474f15169051c, type: 2}
   - {fileID: 11400000, guid: 84d7db5659acd4f0c84b2e4e2eb2071d, type: 2}
   gameText: {fileID: 1409337433}
+  osmoVisionService: {fileID: 401863912}
 --- !u!4 &1957267775
 Transform:
   m_ObjectHideFlags: 0

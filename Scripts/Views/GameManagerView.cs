@@ -5,6 +5,7 @@ using Byjus.RockSalon.Ctrls;
 using DG.Tweening;
 using System;
 using System.Collections.Generic;
+using Byjus.RockSalon.Verticals;
 
 namespace Byjus.RockSalon.Views {
 
@@ -15,6 +16,8 @@ namespace Byjus.RockSalon.Views {
         [SerializeField] List<GameObject> monsterPrefabs;
         [SerializeField] List<LevelData> levels;
         [SerializeField] Text gameText;
+
+        public OsmoVisionService osmoVisionService;
 
         public IGameManagerCtrl ctrl;
 
@@ -52,13 +55,11 @@ namespace Byjus.RockSalon.Views {
         }
 
         public void OnCrystalPlus() {
-            blueCrystalPrefab.transform.localScale += new Vector3(0.01f, 0.01f);
-            redCrystalPrefab.transform.localScale += new Vector3(0.01f, 0.01f);
+            osmoVisionService.ratio += 0.1f;
         }
 
         public void OnCrystalMinus() {
-            blueCrystalPrefab.transform.localScale -= new Vector3(0.01f, 0.01f);
-            redCrystalPrefab.transform.localScale -= new Vector3(0.01f, 0.01f);
+            osmoVisionService.ratio -= 0.1f;
         }
 
         public List<LevelData> GetAllLevels() {

@@ -15,6 +15,8 @@ namespace Byjus.RockSalon.Verticals {
         BoundingBox visionBoundingBox;
         float frameTheta;
 
+        public float ratio = 1f;
+
         public void Init() {
             lastJson = "{}";
             visionBoundingBox = new BoundingBox(new List<Point> { new Point(-56, 81), new Point(91, 82), new Point(91, -116), new Point(-56, -116) });
@@ -105,10 +107,10 @@ namespace Byjus.RockSalon.Verticals {
             var width = Camera.main.aspect * height;
 
             var hwWidth = visionBoundingBox.topRight.x - visionBoundingBox.topLeft.x;
-            var widthRatio = width / hwWidth;
+            var widthRatio = width / hwWidth * ratio;
 
             var hwHeight = visionBoundingBox.topLeft.y - visionBoundingBox.bottomLeft.y;
-            var heightRatio = height / hwHeight;
+            var heightRatio = height / hwHeight * ratio;
 
             return new Vector2(point.x * widthRatio, point.y * heightRatio);
         }
