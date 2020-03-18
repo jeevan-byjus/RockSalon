@@ -11,28 +11,57 @@ using Osmo.SDK.Vision;
 namespace Byjus.RockSalon.Verticals {
     public class OsmoVisionService : MonoBehaviour, IVisionService {
         [SerializeField] Text jsonText;
+        [SerializeField] Text xRatioText;
+        [SerializeField] Text yRatioText;
+        [SerializeField] Text epsilonText;
 
-        string lastJson;
+        List<string> lastJsons;
         BoundingBox visionBoundingBox;
         bool jsonVisible;
 
-        float ratio = 0.6f;
+        float xRatio = 1f;
+        float yRatio = 1f;
+        
+        const float ratioInc = 0.02f;
+        const float epsilonInc = 1f;
 
         public void ToggleJsonText() {
             jsonVisible = !jsonVisible;
             jsonText.gameObject.SetActive(jsonVisible);
         }
 
-        public void OnRatioPlus() {
-            ratio += 0.1f;
+        public void OnXRatioPlus() {
+            xRatio += ratioInc;
+            xRatioText.text = xRatio + "";
         }
 
-        public void OnRatioMinus() {
-            ratio -= 0.1f;
+        public void OnXRatioMinus() {
+            xRatio -= ratioInc;
+            xRatioText.text = xRatio + "";
+        }
+
+        public void OnYRatioPlus() {
+            yRatio += ratioInc;
+            yRatioText.text = yRatio + "";
+        }
+
+        public void OnYRatioMinus() {
+            yRatio -= ratioInc;
+            yRatioText.text = yRatio + "";
+        }
+
+        public void OnPointComparePlus() {
+            visionBoundingBox.hwPointCompareEpsilon += epsilonInc;
+            epsilonText.text = visionBoundingBox.hwPointCompareEpsilon + "";
+        }
+
+        public void OnPointCompareMinus() {
+            visionBoundingBox.hwPointCompareEpsilon -= epsilonInc;
+            epsilonText.text = visionBoundingBox.hwPointCompareEpsilon + "";
         }
 
         public void Init() {
-            lastJson = "{}";
+            lastJsons = new List<string>();
             //jsonText.text = lastJson;
             visionBoundingBox = new BoundingBox(new List<Vector2> { new Vector2(-90, 90), new Vector2(100, 90), new Vector2(190, -200), new Vector2(-150, -200) });
 
@@ -48,25 +77,75 @@ namespace Byjus.RockSalon.Verticals {
 
         public void DispatchEvent(string json) {
             if (json == null) { return; }
-            lastJson = json;
-            //jsonText.text = lastJson;
+            if (lastJsons.Count >= Constants.INPUT_FRAME_COUNT) {
+                lastJsons.RemoveAt(0);
+            }
+            lastJsons.Add(json);
+        }
+
+        string outS = "";
+
+        List<JItem> GetConsolidatedObjects() {
+            if (lastJsons.Count < Constants.INPUT_FRAME_COUNT) {
+                Debug.LogError(lastJsons.Count + " is less than " + Constants.INPUT_FRAME_COUNT);
+                return new List<JItem>();
+            }
+
+            var tLastJsons = new List<string>();
+            tLastJsons.AddRange(lastJsons);
+            lastJsons.Clear();
+
+            outS += "Total outputs: " + tLastJsons.Count + "\n";
+            var outputs = new List<JOutput>();
+            foreach (var js in tLastJsons) {
+                var ot = JsonUtility.FromJson<JOutput>(js);
+                outputs.Add(ot);
+                outS += "count: " + ot.items.Count + "\n";
+            }
+
+            var ret = new List<JItem>();
+
+            foreach (var it in outputs[0].items) {
+                outS += "Testing item: " + it + "\n";
+                var pos = new Vector2(it.pt.x, it.pt.y);
+                int foundCount = 0;
+
+                for (int i = 1; i < outputs.Count; i++) {
+                    bool found = false;
+                    foreach (var it2 in outputs[i].items) {
+                        var pos2 = new Vector2(it2.pt.x, it2.pt.y);
+
+                        if (visionBoundingBox.PositionEquals(pos, pos2)) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) { foundCount++; }
+                    outS += "After comparison with i: " + i + ": count: " + foundCount + "\n";
+                    if (foundCount == Constants.ITEM_DETECTION_FRAME_THRESHOLD - 1) {
+                        ret.Add(it);
+                        break;
+                    }
+                }
+            }
+
+            return ret;
         }
 
         public List<ExtInput> GetVisionObjects() {
             try {
-                var output = JsonUtility.FromJson<JOutput>(lastJson);
-                if (output == null || output.items == null) {
-                    Debug.LogError("Returning empty for json " + lastJson);
-                    return new List<ExtInput>();
-                }
-
-                string outS = "Number of items: " + output.items.Count + "\n";
+                outS = "";
+                var items = GetConsolidatedObjects();
+                outS = "Number of items: " + items.Count + "\n";
 
                 var ret = new List<ExtInput>();
                 int numBlues = 0, numReds = 0;
-                foreach (var item in output.items) {
-                    var pos = visionBoundingBox.GetScreenPoint(item.pt);
-                    outS += "Item: " + item + ", screen position: " + pos + "\n";
+                foreach (var item in items) {
+                    var pos = visionBoundingBox.GetScreenPoint(CameraUtil.MainDimens(), item.pt);
+                    outS += "Item: " + item + ", screen position: " + pos;
+                    pos = CameraAdjustments(pos);
+                    outS += ", Adjusted screen position: " + pos + "\n";
 
                     if (string.Equals(item.color, "blue")) {
                         ret.Add(new ExtInput { id = numBlues++, type = TileType.BLUE_ROD, position = pos });
@@ -80,10 +159,21 @@ namespace Byjus.RockSalon.Verticals {
                 return ret;
 
             } catch (Exception e) {
-                Debug.LogError("Error while parsing lastJson: " + lastJson + "\nException: " + e.Message);
+                Debug.LogError("Error while getting objects: " + e);
                 return new List<ExtInput>();
             }
         }
+
+        Vector2 CameraAdjustments(Vector2 screenPoint) {
+            var x = screenPoint.x * xRatio;
+            var y = screenPoint.y * yRatio;
+
+            return new Vector2(x, y);
+        }
+    }
+
+    public class HighlyFluctuatingInputException : Exception {
+
     }
 
     [Serializable]
@@ -137,6 +227,8 @@ namespace Byjus.RockSalon.Verticals {
         public float bottomWidth;
         public float height;
 
+        public float hwPointCompareEpsilon = 5f;
+
         public BoundingBox(List<Vector2> points) {
             topLeftRef = points[0];
             newTL = GetRelativePosFromTL(points[0]);
@@ -170,32 +262,32 @@ namespace Byjus.RockSalon.Verticals {
         }
         // by slope of 2 points formula
         public float GetDistFromLeft(Vector2 relPoint) {
-            var leftPoint = GetLeftMostX(relPoint.y); 
+            var leftPoint = GetLeftMostX(relPoint.y);
             var dist = relPoint.x - leftPoint;
             return dist;
         }
 
-        public Vector2 GetScreenPoint(Point point) {
+        public Vector2 GetScreenPoint(Vector2 screenDimens, Point point) {
             var vecPoint = new Vector2(point.x, point.y);
             var relPoint = GetRelativePosFromTL(vecPoint);
             var widthAtPoint = GetWidthAtYDist(-relPoint.y);
             var xDist = GetDistFromLeft(relPoint);
 
-            var camW = CameraUtil.MainWidth();
-            var camH = CameraUtil.MainHeight();
-
             // pos from top left
-            var scrX = camW * xDist / widthAtPoint;
-            var scrY = camH * relPoint.y / height;
-
-            Debug.Log("Point: " + point + ", relPoint: " + relPoint + ", Width at point: " + widthAtPoint + ", xDist: " + xDist + ", camW: " + camW + ", camH: " + camH + ", scrX: " + scrX + " scrY: " + scrY);
+            var scrX = screenDimens.x * xDist / widthAtPoint;
+            var scrY = screenDimens.y * relPoint.y / height;
 
             // pos from center
-            scrX = -(camW / 2) + scrX;
-            scrY = (camH / 2) + scrY;
+            scrX = -(screenDimens.x / 2) + scrX;
+            scrY = (screenDimens.y / 2) + scrY;
 
 
             return new Vector2(scrX, scrY);
+        }
+
+        public bool PositionEquals(Vector2 point1, Vector2 point2) {
+            return Mathf.Abs(point1.x - point2.x) < hwPointCompareEpsilon &&
+                Mathf.Abs(point1.y - point2.y) < hwPointCompareEpsilon;
         }
     }
 }

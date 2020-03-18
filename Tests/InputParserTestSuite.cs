@@ -32,6 +32,14 @@ namespace Byjus.RockSalon.Tests {
 
         [UnityTest]
         public IEnumerator TestBothCubesScenario() {
+            var cam = new GameObject("Cam");
+            cam.AddComponent<Camera>();
+            cam.tag = "MainCamera";
+
+            yield return null;
+
+            Assert.NotNull(Camera.main, null);
+
             var outputs = new List<List<ExtInput>>();
 
             var input1 = new List<ExtInput> {
