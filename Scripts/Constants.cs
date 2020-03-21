@@ -4,8 +4,8 @@ using UnityEngine;
 namespace Byjus.RockSalon.Util {
     public class Constants {
         public const float INPUT_DELAY = 0.8f;
-        public const float SW_POINT_COMPARE_EPSILON_PERCENT = 1f / 100;
-        public const float SW_SAME_POINT_DIST_THRESHOLD_PERCENT = 8.0f / 100;
+        public static float SW_POINT_COMPARE_EPSILON_PERCENT = 0.1f / 100;
+        public static float SW_SAME_POINT_DIST_THRESHOLD_PERCENT = 8.0f / 100;
 
         public const int ITEM_DETECTION_FRAME_THRESHOLD = 3;
         public const int INPUT_FRAME_COUNT = 3;

@@ -10,24 +10,29 @@ using Byjus.RockSalon.Util;
 using System;
 
 namespace Byjus.RockSalon.Tests {
-    public class InputParserTestSuite {
+    public class InputParserTestSuite : BaseTestSuite {
         TestVisionService vs;
         InputParser ip;
         TestInputListener il;
 
-        [OneTimeSetUp]
-        public void GlobalSetup() {
-            vs = new TestVisionService();
-            Factory.SetVisionService(vs);
-        }
-
         [SetUp]
         public void TestSetup() {
+            BaseInit();
+
+            vs = new TestVisionService();
+            Factory.SetVisionService(vs);
+
             il = new TestInputListener();
             il.ids = new List<int>();
             var go = new GameObject("TestInputParser");
+            BaseAddGo(go);
             ip = go.AddComponent<InputParser>();
             ip.inputListener = il;
+        }
+
+        [TearDown]
+        public void Teardown() {
+            BaseTearDown();
         }
 
         [UnityTest]
@@ -73,57 +78,6 @@ namespace Byjus.RockSalon.Tests {
             ip.Init();
 
             yield return new WaitForSeconds(outputs.Count * Constants.INPUT_DELAY + 1);
-
-
-        }
-    }
-
-    class TestInputListener : IExtInputListener {
-        public List<int> ids;
-
-        public void OnCrystalAdded(TileType type, int id, Vector2 position) {
-            ids.Add(id);
-            Debug.Log("Added " + type + ", id: " + id + ", at: " + position);
-        }
-
-        public void OnCrystalMoved(TileType type, int id, Vector2 newPosition) {
-            Debug.Log("Moved " + type + ", id: " + id + ", to: " + newPosition);
-        }
-
-        public void OnCrystalRemoved(TileType type, int id) {
-            ids.Remove(id);
-            Debug.Log("Removed: " + type + ", id: " + id);
-        }
-
-        public void OnInputEnd() {
-            Debug.Log("End");
-        }
-
-        public void OnInputStart() {
-            Debug.Log("Start");
-        }
-    }
-
-    class TestVisionService : IVisionService {
-        List<List<ExtInput>> outputs;
-
-        int inputCount;
-
-        public void Init() {
-            outputs = new List<List<ExtInput>>();
-            inputCount = 0;
-        }
-
-        public void SetOutputs(List<List<ExtInput>> outputs) {
-            this.outputs = outputs;
-        }
-
-        public List<ExtInput> GetVisionObjects() {
-            if (inputCount < outputs.Count) {
-                return outputs[inputCount++];
-            }
-
-            return new List<ExtInput>();
         }
     }
 }

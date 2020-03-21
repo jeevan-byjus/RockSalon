@@ -1,0 +1,118 @@
+﻿{
+    "detectionArea": [
+        -87.2727,
+        115.21374,
+        -250.5109,
+        -466.04102,
+        273.3943,
+        -466.04102,
+        110.156105,
+        115.21374
+    ],
+    "frameCounter": 16959,
+    "handProbability": 0.00059999997,
+    "items": [
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -79.57346,
+                "y": -8.681584
+            }
+        },
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -79.32689,
+                "y": -20.76563
+            }
+        },
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -79.821556,
+                "y": 3.5181224
+            }
+        },
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -78.64215,
+                "y": -69.76981
+            }
+        },
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -78.78695,
+                "y": -57.402546
+            }
+        },
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -78.92279,
+                "y": -45.161934
+            }
+        },
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -80.64654,
+                "y": 40.210716
+            }
+        },
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -80.4373,
+                "y": 27.704184
+            }
+        },
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -80.10363,
+                "y": 15.436745
+            }
+        },
+        {
+            "color": "blue",
+            "id": 0,
+            "pt": {
+                "x": -79.06377,
+                "y": -32.665997
+            }
+        }
+    ],
+    "mode": 147,
+    "setup": {
+        "CalibrationString": "p:67.7 s:79",
+        "Quality": 3,
+        "Response": 0.98892856,
+        "baseType": "Uno_With_Case",
+        "insertConfig": {
+            "confidence": 0.0,
+            "quality": -1
+        },
+        "instaBaseType": "Uno_With_Case",
+        "standRect": {
+            "h": 480,
+            "w": 36,
+            "x": 79,
+            "y": 0
+        },
+        "version": "v3"
+    },
+    "time": 3001982,
+    "timeTaken": 24,
+    "version": "3.4.5-0-gd30d57c-REL-REG_ON-DBG_ON"
+}

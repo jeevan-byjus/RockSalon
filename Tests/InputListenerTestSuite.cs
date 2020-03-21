@@ -9,7 +9,7 @@ using Byjus.RockSalon.Views;
 using System;
 
 namespace Byjus.RockSalon.Tests {
-    public class InputListenerTestSuite {
+    public class InputListenerTestSuite : BaseTestSuite {
         IExtInputListener inputListener;
         TestView tv;
 
@@ -27,8 +27,8 @@ namespace Byjus.RockSalon.Tests {
 
         [TearDown]
         public void TearDown() {
-            inputListener = null;
-            tv = null;
+            Debug.Log("Tear down");
+            tv.TearDown();
         }
 
         [UnityTest]
@@ -127,48 +127,6 @@ namespace Byjus.RockSalon.Tests {
             inputListener.OnCrystalMoved(TileType.RED_CUBE, 1, new Vector2(-3, -2));
             inputListener.OnCrystalMoved(TileType.RED_CUBE, 4, new Vector2(-3, -2));
             inputListener.OnCrystalAdded(TileType.BLUE_ROD, 5, new Vector2(0, 3));
-        }
-    }
-
-    class TestView : IGameManagerView {
-        public List<GameObject> crystals;
-
-        public void Init() {
-            crystals = new List<GameObject>();
-        }
-
-        public void CreateCrystal(CrystalType type, Vector2 position, Action<GameObject> onCreateDone) {
-            var go = new GameObject(type + "");
-            go.transform.position = position;
-            crystals.Add(go);
-            onCreateDone(go);
-        }
-
-        public void MoveCrystal(GameObject crystalGo, Vector2 newPosition, Action onMoveDone) {
-            crystalGo.transform.position = newPosition;
-            onMoveDone();
-        }
-
-        public void RemoveCrystal(GameObject crystalGo, Action onRemoveDone) {
-            crystals.Remove(crystalGo);
-            onRemoveDone();
-        }
-
-        public List<LevelData> GetAllLevels() {
-            var ld = ScriptableObject.CreateInstance<LevelData>();
-            ld.monsterIndex = 0;
-            ld.generic = true;
-            ld.totalReqt = 20;
-
-            return new List<LevelData>() { ld };
-        }
-
-        public void InstantiateLevel(LevelInfo level) {
-            Debug.Log("Instantiating " + level);
-        }
-
-        public void DestroyLevel(LevelInfo level) {
-            Debug.Log("Destroying " + level);
         }
     }
 }

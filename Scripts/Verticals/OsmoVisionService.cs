@@ -10,7 +10,7 @@ using Osmo.SDK.Vision;
 
 namespace Byjus.RockSalon.Verticals {
     public class OsmoVisionService : MonoBehaviour, IVisionService {
-        [SerializeField] Text jsonText;
+        [SerializeField] public Text jsonText;
         [SerializeField] Text xRatioText;
         [SerializeField] Text yRatioText;
         [SerializeField] Text epsilonText;
@@ -63,7 +63,7 @@ namespace Byjus.RockSalon.Verticals {
         public void Init() {
             lastJsons = new List<string>();
             //jsonText.text = lastJson;
-            visionBoundingBox = new BoundingBox(new List<Vector2> { new Vector2(-90, 90), new Vector2(100, 90), new Vector2(190, -200), new Vector2(-150, -200) });
+            visionBoundingBox = new BoundingBox(new List<Vector2> { new Vector2(-100, 90), new Vector2(100, 90), new Vector2(100, -200), new Vector2(-100, -200) });
 
             VisionConnector.Register(
                     apiKey: API.Key,
@@ -88,7 +88,7 @@ namespace Byjus.RockSalon.Verticals {
         List<JItem> GetConsolidatedObjects() {
             if (lastJsons.Count < Constants.INPUT_FRAME_COUNT) {
                 Debug.LogError(lastJsons.Count + " is less than " + Constants.INPUT_FRAME_COUNT);
-                return new List<JItem>();
+                throw new TooSoonToTellException();
             }
 
             var tLastJsons = new List<string>();
@@ -105,27 +105,27 @@ namespace Byjus.RockSalon.Verticals {
 
             var ret = new List<JItem>();
 
-            foreach (var it in outputs[0].items) {
-                outS += "Testing item: " + it + "\n";
+            foreach (var it in outputs[outputs.Count - 1].items) {
+                outS += "\nTesting item: " + it + "\n";
                 var pos = new Vector2(it.pt.x, it.pt.y);
                 int foundCount = 0;
 
-                for (int i = 1; i < outputs.Count; i++) {
-                    bool found = false;
+                for (int i = outputs.Count - 2; i >= 0; i--) {
+                    int found = 0;
                     foreach (var it2 in outputs[i].items) {
+                        if (it2.id != it.id) { continue; }
+
                         var pos2 = new Vector2(it2.pt.x, it2.pt.y);
 
                         if (visionBoundingBox.PositionEquals(pos, pos2)) {
-                            found = true;
-                            break;
+                            found++;
                         }
                     }
 
-                    if (found) { foundCount++; }
-                    outS += "After comparison with i: " + i + ": count: " + foundCount + "\n";
+                    if (found > 0) { foundCount++; }
+                    outS += "After comparison with i: " + i + ", found " + found + " equals and new count: " + foundCount + "\n";
                     if (foundCount == Constants.ITEM_DETECTION_FRAME_THRESHOLD - 1) {
                         ret.Add(it);
-                        break;
                     }
                 }
             }
@@ -134,18 +134,17 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         public List<ExtInput> GetVisionObjects() {
-            try {
                 outS = "";
                 var items = GetConsolidatedObjects();
-                outS = "Number of items: " + items.Count + "\n";
+                outS = "\nNumber of items: " + items.Count + "\n";
 
                 var ret = new List<ExtInput>();
                 int numBlues = 0, numReds = 0;
                 foreach (var item in items) {
                     var pos = visionBoundingBox.GetScreenPoint(CameraUtil.MainDimens(), item.pt);
-                    outS += "Item: " + item + ", screen position: " + pos;
+                    outS += "Item: " + item + ", screen: " + pos;
                     pos = CameraAdjustments(pos);
-                    outS += ", Adjusted screen position: " + pos + "\n";
+                    outS += ", Adjusted: " + pos + "\n";
 
                     if (string.Equals(item.color, "blue")) {
                         ret.Add(new ExtInput { id = numBlues++, type = TileType.BLUE_ROD, position = pos });
@@ -157,11 +156,6 @@ namespace Byjus.RockSalon.Verticals {
                 jsonText.text = outS;
 
                 return ret;
-
-            } catch (Exception e) {
-                Debug.LogError("Error while getting objects: " + e);
-                return new List<ExtInput>();
-            }
         }
 
         Vector2 CameraAdjustments(Vector2 screenPoint) {
@@ -170,6 +164,11 @@ namespace Byjus.RockSalon.Verticals {
 
             return new Vector2(x, y);
         }
+    }
+
+
+    public class TooSoonToTellException : Exception {
+        public override string Message => "Enough data was not accumulated for proper input";
     }
 
     public class HighlyFluctuatingInputException : Exception {
@@ -270,11 +269,9 @@ namespace Byjus.RockSalon.Verticals {
         public Vector2 GetScreenPoint(Vector2 screenDimens, Point point) {
             var vecPoint = new Vector2(point.x, point.y);
             var relPoint = GetRelativePosFromTL(vecPoint);
-            var widthAtPoint = GetWidthAtYDist(-relPoint.y);
-            var xDist = GetDistFromLeft(relPoint);
 
             // pos from top left
-            var scrX = screenDimens.x * xDist / widthAtPoint;
+            var scrX = screenDimens.x * relPoint.x / topWidth;
             var scrY = screenDimens.y * relPoint.y / height;
 
             // pos from center

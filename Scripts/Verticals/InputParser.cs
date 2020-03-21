@@ -23,12 +23,17 @@ namespace Byjus.RockSalon.Verticals {
             yield return new WaitForSeconds(Constants.INPUT_DELAY);
 
             inputCount++;
-            var objs = visionService.GetVisionObjects();
-            inputListener.OnInputStart();
-            OnInput(objs);
-            inputListener.OnInputEnd();
+            try {
+                var objs = visionService.GetVisionObjects();
+                inputListener.OnInputStart();
+                OnInput(objs);
+                inputListener.OnInputEnd();
 
-            StartCoroutine(ListenForInput());
+                StartCoroutine(ListenForInput());
+
+            } catch (System.Exception e) {
+                Debug.LogError("Some error occured " + e.Message);
+            }
         }
 
         void OnInput(List<ExtInput> objs) {
@@ -38,7 +43,6 @@ namespace Byjus.RockSalon.Verticals {
             extraNew.Sort((x, y) => (int) (Vector2.Distance(x.position, Vector2.zero) - Vector2.Distance(y.position, Vector2.zero)));
 
             foreach (var newO in extraNew) {
-                // find closest old object (threshold 3 dist), indicating a move
                 var min = FindClosest(newO, extraOld);
 
                 if (min == null) {
@@ -50,8 +54,9 @@ namespace Byjus.RockSalon.Verticals {
 
                 } else {
                     // moved something
-                    newO.id = min.id;
-                    inputListener.OnCrystalMoved(newO.type, newO.id, newO.position);
+                    var currObj = currentObjects.Find(x => x.id == min.id);
+                    currObj.position = newO.position;
+                    inputListener.OnCrystalMoved(min.type, min.id, min.position);
                     extraOld.Remove(min);
                 }
             }
@@ -72,6 +77,7 @@ namespace Byjus.RockSalon.Verticals {
                 bool found = false;
                 foreach (var newO in extraNew) {
                     if (old.type == newO.type && GeneralUtil.EqualPositionSw(old.position, newO.position)) {
+                        old.position = newO.position;
                         found = true;
                         extraNew.Remove(newO);
                         break;

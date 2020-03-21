@@ -5,7 +5,7 @@ using Byjus.RockSalon.Ctrls;
 using DG.Tweening;
 using System;
 using System.Collections.Generic;
-using Byjus.RockSalon.Verticals;
+using Byjus.RockSalon.Util;
 
 namespace Byjus.RockSalon.Views {
 
@@ -16,6 +16,11 @@ namespace Byjus.RockSalon.Views {
         [SerializeField] List<GameObject> monsterPrefabs;
         [SerializeField] List<LevelData> levels;
         [SerializeField] Text gameText;
+        [SerializeField] Text epsilonText;
+        [SerializeField] Text diffText;
+
+        const float epsilonInc = 0.05f / 100;
+        const float diffInc = 0.5f / 100;
 
         public IGameManagerCtrl ctrl;
 
@@ -38,18 +43,24 @@ namespace Byjus.RockSalon.Views {
             ctrl.OnSubmitPressed();
         }
 
-        public void OnCameraPlus() {
-            Camera.main.orthographicSize += 5;
-            var height = Camera.main.orthographicSize * 2;
-            var width = Camera.main.aspect * height;
-            bg.size = new Vector2(width, height);
+        public void OnEpsilonPlus() {
+            Constants.SW_POINT_COMPARE_EPSILON_PERCENT += epsilonInc;
+            epsilonText.text = (Constants.SW_POINT_COMPARE_EPSILON_PERCENT * 100) + " %";
         }
 
-        public void OnCameraMinus() {
-            Camera.main.orthographicSize -= 5;
-            var height = Camera.main.orthographicSize * 2;
-            var width = Camera.main.aspect * height;
-            bg.size = new Vector2(width, height);
+        public void OnEpsilonMinus() {
+            Constants.SW_POINT_COMPARE_EPSILON_PERCENT -= epsilonInc;
+            epsilonText.text = (Constants.SW_POINT_COMPARE_EPSILON_PERCENT * 100) + " %";
+        }
+
+        public void OnDiffThresholdPlus() {
+            Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT += diffInc;
+            diffText.text = (Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT * 100) + " %";
+        }
+
+        public void OnDiffThresholdMinus() {
+            Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT -= diffInc;
+            diffText.text = (Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT * 100) + " %";
         }
 
         public List<LevelData> GetAllLevels() {
