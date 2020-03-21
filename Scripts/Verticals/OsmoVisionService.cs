@@ -83,8 +83,6 @@ namespace Byjus.RockSalon.Verticals {
             lastJsons.Add(json);
         }
 
-        string outS = "";
-
         List<JItem> GetConsolidatedObjects() {
             if (lastJsons.Count < Constants.INPUT_FRAME_COUNT) {
                 Debug.LogError(lastJsons.Count + " is less than " + Constants.INPUT_FRAME_COUNT);
@@ -95,18 +93,15 @@ namespace Byjus.RockSalon.Verticals {
             tLastJsons.AddRange(lastJsons);
             lastJsons.Clear();
 
-            outS += "Total outputs: " + tLastJsons.Count + "\n";
             var outputs = new List<JOutput>();
             foreach (var js in tLastJsons) {
                 var ot = JsonUtility.FromJson<JOutput>(js);
                 outputs.Add(ot);
-                outS += "count: " + ot.items.Count + "\n";
             }
 
             var ret = new List<JItem>();
 
             foreach (var it in outputs[outputs.Count - 1].items) {
-                outS += "\nTesting item: " + it + "\n";
                 var pos = new Vector2(it.pt.x, it.pt.y);
                 int foundCount = 0;
 
@@ -123,7 +118,6 @@ namespace Byjus.RockSalon.Verticals {
                     }
 
                     if (found > 0) { foundCount++; }
-                    outS += "After comparison with i: " + i + ", found " + found + " equals and new count: " + foundCount + "\n";
                     if (foundCount == Constants.ITEM_DETECTION_FRAME_THRESHOLD - 1) {
                         ret.Add(it);
                     }
@@ -134,17 +128,13 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         public List<ExtInput> GetVisionObjects() {
-                outS = "";
                 var items = GetConsolidatedObjects();
-                outS = "\nNumber of items: " + items.Count + "\n";
 
                 var ret = new List<ExtInput>();
                 int numBlues = 0, numReds = 0;
                 foreach (var item in items) {
                     var pos = visionBoundingBox.GetScreenPoint(CameraUtil.MainDimens(), item.pt);
-                    outS += "Item: " + item + ", screen: " + pos;
                     pos = CameraAdjustments(pos);
-                    outS += ", Adjusted: " + pos + "\n";
 
                     if (string.Equals(item.color, "blue")) {
                         ret.Add(new ExtInput { id = numBlues++, type = TileType.BLUE_ROD, position = pos });
@@ -152,8 +142,6 @@ namespace Byjus.RockSalon.Verticals {
                         ret.Add(new ExtInput { id = 1000 + numReds++, type = TileType.RED_CUBE, position = pos });
                     }
                 }
-
-                jsonText.text = outS;
 
                 return ret;
         }
@@ -171,7 +159,7 @@ namespace Byjus.RockSalon.Verticals {
         public override string Message => "Enough data was not accumulated for proper input";
     }
 
-    public class HighlyFluctuatingInputException : Exception {
+    public class FluctuatingInputException : Exception {
 
     }
 

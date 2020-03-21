@@ -37,6 +37,7 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         void OnInput(List<ExtInput> objs) {
+            ValidateInput(objs);
             Segregate(objs, out List<ExtInput> extraOld, out List<ExtInput> extraNew);
 
             extraOld.Sort((x, y) => (int) (Vector2.Distance(x.position, Vector2.zero) - Vector2.Distance(y.position, Vector2.zero)));
@@ -66,6 +67,30 @@ namespace Byjus.RockSalon.Verticals {
                 currentObjects.Remove(old);
             }
 
+        }
+
+        // have to improve this logic
+        // but finding out which cubes belong to the same rod is a tough problem
+        // group together blue cubes with the same slope
+        // there are a lot of edge cases though
+        void ValidateInput(List<ExtInput> objs) {
+            int numBlues = 0;
+            List<int> indices = new List<int>();
+
+            for (int i = 0; i < objs.Count; i++) {
+                var obj = objs[i];
+                if (obj.type == TileType.BLUE_ROD) {
+                    indices.Add(i);
+                    numBlues++;
+                }
+            }
+
+            if (numBlues % 10 != 0) {
+                // considering only full blue rods, so don't consider the blue cubes in this input
+                for (int i = indices.Count - 1; i >= 0; i--) {
+                    objs.RemoveAt(indices[i]);
+                }
+            }
         }
 
         void Segregate(List<ExtInput> newObjs, out List<ExtInput> extraOld, out List<ExtInput> extraNew) {
