@@ -75,7 +75,7 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         public override string ToString() {
-            return id + ", " + type + ", " + position;
+            return id + ", " + type + ", (" + position.x + ", " + position.y + ")"; 
         }
     }
 }

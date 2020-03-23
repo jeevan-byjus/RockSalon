@@ -37,11 +37,10 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         void OnInput(List<ExtInput> objs) {
+            Debug.Log("Before validating: " + objs.Count);
             ValidateInput(objs);
+            Debug.Log("After validating: " + objs.Count);
             Segregate(objs, out List<ExtInput> extraOld, out List<ExtInput> extraNew);
-
-            extraOld.Sort((x, y) => (int) (Vector2.Distance(x.position, Vector2.zero) - Vector2.Distance(y.position, Vector2.zero)));
-            extraNew.Sort((x, y) => (int) (Vector2.Distance(x.position, Vector2.zero) - Vector2.Distance(y.position, Vector2.zero)));
 
             foreach (var newO in extraNew) {
                 var min = FindClosest(newO, extraOld);
@@ -78,18 +77,23 @@ namespace Byjus.RockSalon.Verticals {
             List<int> indices = new List<int>();
 
             for (int i = 0; i < objs.Count; i++) {
-                var obj = objs[i];
-                if (obj.type == TileType.BLUE_ROD) {
+                if (objs[i].type == TileType.BLUE_ROD) {
                     indices.Add(i);
                     numBlues++;
                 }
             }
 
             if (numBlues % 10 != 0) {
-                // considering only full blue rods, so don't consider the blue cubes in this input
+                Debug.Log("Validating input found non-multiple blues " + numBlues);
+                // considering only full blue cubes, so don't consider the blue cubes in this input
+                // so remove all new blue cubes
                 for (int i = indices.Count - 1; i >= 0; i--) {
                     objs.RemoveAt(indices[i]);
                 }
+                Debug.Log("After removing indices count: " + objs.Count);
+                // and add current blue cubes denoting no change in input
+                objs.AddRange(currentObjects.FindAll(x => x.type == TileType.BLUE_ROD));
+                Debug.Log("After adding back blues count: " + objs.Count);
             }
         }
 
@@ -101,7 +105,9 @@ namespace Byjus.RockSalon.Verticals {
             foreach (var old in currentObjects) {
                 bool found = false;
                 foreach (var newO in extraNew) {
-                    if (old.type == newO.type && GeneralUtil.EqualPositionSw(old.position, newO.position)) {
+                    //Debug.Log("Comparing old: " + old + ", new: " + newO);
+                    if (old.type == newO.type && GenUtil.EqualPositionSw(old.position, newO.position)) {
+                        //Debug.Log("Found equal for old " + old + ", new " + newO);
                         old.position = newO.position;
                         found = true;
                         extraNew.Remove(newO);
@@ -117,13 +123,20 @@ namespace Byjus.RockSalon.Verticals {
 
         ExtInput FindClosest(ExtInput obj, List<ExtInput> targetObjs) {
             var camDimen = CameraUtil.MainDimens();
-            float minWidth = camDimen.x * Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT;
-            float minHeight = camDimen.y * Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT;
-            float minDist = Mathf.Sqrt(Mathf.Pow(minWidth, 2) + Mathf.Pow(minHeight, 2));
+            float minWidth = GenUtil.Rounded(camDimen.x * Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT);
+            float minHeight = GenUtil.Rounded(camDimen.y * Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT);
+            float minDist = float.MaxValue;
             ExtInput min = null;
 
             foreach (var old in targetObjs) {
                 if (old.type != obj.type) { continue; }
+
+                var diffX = GenUtil.Rounded(Mathf.Abs(obj.position.x - old.position.x));
+                var diffY = GenUtil.Rounded(Mathf.Abs(obj.position.y - old.position.y));
+
+                if (diffX > minWidth || diffY > minHeight) {
+                    continue;
+                }
 
                 var dist = Vector2.Distance(obj.position, old.position);
                 if (dist < minDist) {
@@ -132,7 +145,7 @@ namespace Byjus.RockSalon.Verticals {
                 }
             }
 
-            Debug.Log("Returning " + min + " for " + obj);
+            //Debug.Log("Returning closest: " + min + " for " + obj);
             return min;
         }
 

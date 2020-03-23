@@ -70,8 +70,10 @@ namespace Byjus.RockSalon.Externals {
                 var pos = new Vector2(obj.Location.X, obj.Location.Y);
                 var worldPos = Camera.main.ScreenToWorldPoint(pos);
 
-                if (obj.Id < 10) {    
-                    ret.Add(new ExtInput { id = obj.Id, type = TileType.BLUE_ROD, position = worldPos });
+                if (obj.Id < 10) {
+                    for (int i = 0; i < 10; i++) {
+                        ret.Add(new ExtInput { id = obj.Id, type = TileType.BLUE_ROD, position = worldPos + new Vector3(i * 1, 0) });
+                    }
                 } else {
                     ret.Add(new ExtInput { id = obj.Id, type = TileType.RED_CUBE, position = worldPos });
                 }

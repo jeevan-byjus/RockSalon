@@ -20,5 +20,12 @@ namespace Byjus.RockSalon.Tests {
             }
             setupGOs.Clear();
         }
+
+        protected void CreateMainCamera() {
+            var cam = new GameObject("Camera");
+            cam.AddComponent<Camera>();
+            cam.tag = "MainCamera";
+            BaseAddGo(cam);
+        }
     }
 }

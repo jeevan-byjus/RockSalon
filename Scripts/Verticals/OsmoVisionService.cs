@@ -19,9 +19,9 @@ namespace Byjus.RockSalon.Verticals {
         BoundingBox visionBoundingBox;
         bool jsonVisible;
 
-        float xRatio = 1f;
-        float yRatio = 1f;
-        
+        float xRatio = 0.8f;
+        float yRatio = 0.8f;
+
         const float ratioInc = 0.02f;
         const float epsilonInc = 1f;
 
@@ -83,6 +83,7 @@ namespace Byjus.RockSalon.Verticals {
             lastJsons.Add(json);
         }
 
+        // accumulate all objects seen in these frames
         List<JItem> GetConsolidatedObjects() {
             if (lastJsons.Count < Constants.INPUT_FRAME_COUNT) {
                 Debug.LogError(lastJsons.Count + " is less than " + Constants.INPUT_FRAME_COUNT);
@@ -101,24 +102,23 @@ namespace Byjus.RockSalon.Verticals {
 
             var ret = new List<JItem>();
 
-            foreach (var it in outputs[outputs.Count - 1].items) {
-                var pos = new Vector2(it.pt.x, it.pt.y);
-                int foundCount = 0;
+            foreach (var ot in outputs) {
+                var toAdd = new List<JItem>();
 
-                for (int i = outputs.Count - 2; i >= 0; i--) {
-                    int found = 0;
-                    foreach (var it2 in outputs[i].items) {
-                        if (it2.id != it.id) { continue; }
+                foreach (var it in ot.items) {
+                    var itPos = new Vector2(it.pt.x, it.pt.y);
+                    bool found = false;
 
-                        var pos2 = new Vector2(it2.pt.x, it2.pt.y);
+                    foreach (var ex in ret) {
+                        var exPos = new Vector2(ex.pt.x, ex.pt.y);
 
-                        if (visionBoundingBox.PositionEquals(pos, pos2)) {
-                            found++;
+                        if (ex.id == it.id && visionBoundingBox.PositionEquals(exPos, itPos)) {
+                            found = true;
+                            break;
                         }
                     }
 
-                    if (found > 0) { foundCount++; }
-                    if (foundCount == Constants.ITEM_DETECTION_FRAME_THRESHOLD - 1) {
+                    if (!found) {
                         ret.Add(it);
                     }
                 }
@@ -128,28 +128,38 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         public List<ExtInput> GetVisionObjects() {
-                var items = GetConsolidatedObjects();
+            var items = GetConsolidatedObjects();
 
-                var ret = new List<ExtInput>();
-                int numBlues = 0, numReds = 0;
-                foreach (var item in items) {
-                    var pos = visionBoundingBox.GetScreenPoint(CameraUtil.MainDimens(), item.pt);
-                    pos = CameraAdjustments(pos);
+            var ret = new List<ExtInput>();
+            int numBlues = 0, numReds = 0;
+            foreach (var item in items) {
+                var pos = visionBoundingBox.GetScreenPoint(CameraUtil.MainDimens(), item.pt);
+                pos = PosAdjustments(pos);
 
-                    if (string.Equals(item.color, "blue")) {
-                        ret.Add(new ExtInput { id = numBlues++, type = TileType.BLUE_ROD, position = pos });
-                    } else if (string.Equals(item.color, "red")) {
-                        ret.Add(new ExtInput { id = 1000 + numReds++, type = TileType.RED_CUBE, position = pos });
-                    }
+                ExtInput it = null;
+                if (string.Equals(item.color, "blue")) {
+                    it = new ExtInput { id = 1000 + numBlues++, type = TileType.BLUE_ROD, position = pos };
+                } else if (string.Equals(item.color, "red")) {
+                    it = new ExtInput { id = 10000 + numReds++, type = TileType.RED_CUBE, position = pos };
                 }
 
-                return ret;
+                Debug.Log("Vision Item: " + it);
+                ret.Add(it);
+            }
+
+            return ret;
         }
 
-        Vector2 CameraAdjustments(Vector2 screenPoint) {
+        Vector2 PosAdjustments(Vector2 screenPoint) {
+            // for camera
             var x = screenPoint.x * xRatio;
             var y = screenPoint.y * yRatio;
 
+            // round off
+            x = (float) Math.Round(x, Constants.POSITION_ROUND_OFF_TO_DIGITS);
+            y = (float) Math.Round(y, Constants.POSITION_ROUND_OFF_TO_DIGITS);
+
+            Debug.Log("Before adjustments: " + screenPoint.x + ", " + screenPoint.y + ", after: " + x + ", " + y);
             return new Vector2(x, y);
         }
     }
@@ -184,7 +194,7 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         public override string ToString() {
-            return "Color: " + color + ", id: " + id + ", pos: (" + pt + ")";
+            return "Color: " + color + ", id: " + id + ", pos: (" + pt.x + ", " + pt.y + ")";
         }
     }
 

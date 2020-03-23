@@ -69,27 +69,35 @@ namespace Byjus.RockSalon.Tests {
         public IEnumerator FullTest() {
             var json1 = ReadFile("Test2", "Json1");
             var json2 = ReadFile("Test2", "Json2");
-            var json3 = ReadFile("Test2", "Json3");
+            var json4 = ReadFile("Test2", "Json4");
 
             osmoVisionService.DispatchEvent(json1);
             osmoVisionService.DispatchEvent(json1);
             osmoVisionService.DispatchEvent(json1);
-
             yield return new WaitForSeconds(Constants.INPUT_DELAY);
+
+            Assert.AreEqual(10, testView.numCreate);
+            Assert.AreEqual(0, testView.numMove);
+            Assert.AreEqual(0, testView.numRemove);
 
             osmoVisionService.DispatchEvent(json2);
             osmoVisionService.DispatchEvent(json2);
             osmoVisionService.DispatchEvent(json2);
-
             yield return new WaitForSeconds(Constants.INPUT_DELAY);
 
-            osmoVisionService.DispatchEvent(json3);
-            osmoVisionService.DispatchEvent(json3);
-            osmoVisionService.DispatchEvent(json3);
+            Assert.AreEqual(0, testView.numCreate - 10); // 10 already added before
+            Assert.AreEqual(0, testView.numMove);
+            Assert.AreEqual(0, testView.numRemove);
 
+            // json4 has only 9 cubes, it should not consider this input
+            osmoVisionService.DispatchEvent(json4);
+            osmoVisionService.DispatchEvent(json4);
+            osmoVisionService.DispatchEvent(json4);
             yield return new WaitForSeconds(Constants.INPUT_DELAY);
 
-            Assert.AreEqual(10, testView.crystals.Count);
+            Assert.AreEqual(0, testView.numCreate - 10); // 10 already added before
+            Assert.AreEqual(0, testView.numMove);
+            Assert.AreEqual(0, testView.numRemove);
 
         }
     }

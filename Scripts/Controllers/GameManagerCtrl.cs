@@ -21,12 +21,12 @@ namespace Byjus.RockSalon.Ctrls {
 
         void LoadLevel(int levelIndex) {
             currLevelId = levelIndex;
-            view.InstantiateLevel(allLevels[currLevelId]);
+            view.InstantiateLevel(allLevels[currLevelId], () => { });
         }
 
         LevelInfo GetLevelInfoForViewInfo(LevelData level) {
             var info = new LevelInfo();
-            info.monsterIndex = level.monsterIndex;
+            info.monsterPrefab = level.monsterPrefab;
 
             if (level.generic) {
                 info.totalReqt = level.totalReqt;
@@ -86,8 +86,19 @@ namespace Byjus.RockSalon.Ctrls {
             // validate crystals
             // if proper, show win text, or congrats text
             // else, show dissatisfaction text
-            view.DestroyLevel(allLevels[currLevelId]);
-            LoadLevel((currLevelId + 1) % allLevels.Count);
+            int numRed = crystals.FindAll(x => x.type == CrystalType.RED_CRYSTAL).Count;
+            int numBlue = crystals.Count - numRed;
+
+            if (allLevels[currLevelId].ValidateLevel(numRed, numBlue)) {
+                view.ShowCharacterAnimation(CharacterState.HAPPY, () => {
+                    view.DestroyLevel(allLevels[currLevelId], () => {
+                        LoadLevel((currLevelId + 1) % allLevels.Count);
+                    });
+                });
+
+            } else {
+                view.ShowCharacterAnimation(CharacterState.SAD, () => { });
+            }
         }
 
         void OnCrystalAddDone(Crystal crystal, GameObject crystalGo) {
@@ -133,6 +144,11 @@ namespace Byjus.RockSalon.Ctrls {
         EQUAL
     }
 
+    public enum CharacterState {
+        HAPPY,
+        SAD
+    }
+
     public class Reqt {
         public Comparison comparison;
         public int numCrystals;
@@ -143,15 +159,14 @@ namespace Byjus.RockSalon.Ctrls {
     }
 
     public class LevelInfo {
-        public int monsterIndex;
+        public GameObject monsterPrefab;
+
         public int totalReqt;
         public Reqt blueReqt;
         public Reqt redReqt;
 
-        public GameObject monster;
-
         public override string ToString() {
-            return "Monster Index: " + monsterIndex + ", totalReqt: " + totalReqt + ", BlueReqt: " + blueReqt + ", RedReqt: " + redReqt;
+            return "Monster Index: " + monsterPrefab.name + ", totalReqt: " + totalReqt + ", BlueReqt: " + blueReqt + ", RedReqt: " + redReqt;
         }
 
         public string GetReqtString() {
@@ -160,6 +175,14 @@ namespace Byjus.RockSalon.Ctrls {
             } else {
                 return "I want " + blueReqt.numCrystals + " Blue crystals and " + redReqt.numCrystals + " Red crystals on my head";
             }
+        }
+
+        public bool ValidateLevel(int numRed, int numBlue) {
+            if (blueReqt.comparison == Comparison.ANY) {
+                return totalReqt == numRed + numBlue;
+            }
+
+            return numRed == redReqt.numCrystals && numBlue == blueReqt.numCrystals;
         }
     }
 }

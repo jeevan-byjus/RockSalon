@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7274201a71924afbb8e20d1b40bc670, type: 3}
   m_Name: LevelData1
   m_EditorClassIdentifier: 
-  monsterIndex: 0
+  monsterPrefab: {fileID: 1025925448526554, guid: 7c1b6592387f843d1b2545393fa15784,
+    type: 3}
   generic: 1
   totalReqt: 24
   numBlue: 0

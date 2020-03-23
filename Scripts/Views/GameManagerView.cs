@@ -13,11 +13,12 @@ namespace Byjus.RockSalon.Views {
         [SerializeField] SpriteRenderer bg;
         [SerializeField] GameObject blueCrystalPrefab;
         [SerializeField] GameObject redCrystalPrefab;
-        [SerializeField] List<GameObject> monsterPrefabs;
         [SerializeField] List<LevelData> levels;
         [SerializeField] Text gameText;
         [SerializeField] Text epsilonText;
         [SerializeField] Text diffText;
+
+        GameObject monster;
 
         const float epsilonInc = 0.05f / 100;
         const float diffInc = 0.5f / 100;
@@ -44,37 +45,44 @@ namespace Byjus.RockSalon.Views {
         }
 
         public void OnEpsilonPlus() {
-            Constants.SW_POINT_COMPARE_EPSILON_PERCENT += epsilonInc;
-            epsilonText.text = (Constants.SW_POINT_COMPARE_EPSILON_PERCENT * 100) + " %";
+            Constants.SW_EQUAL_POSITION_DIFF_PERCENT += epsilonInc;
+            epsilonText.text = (Constants.SW_EQUAL_POSITION_DIFF_PERCENT * 100) + " %";
         }
 
         public void OnEpsilonMinus() {
-            Constants.SW_POINT_COMPARE_EPSILON_PERCENT -= epsilonInc;
-            epsilonText.text = (Constants.SW_POINT_COMPARE_EPSILON_PERCENT * 100) + " %";
+            Constants.SW_EQUAL_POSITION_DIFF_PERCENT -= epsilonInc;
+            epsilonText.text = (Constants.SW_EQUAL_POSITION_DIFF_PERCENT * 100) + " %";
         }
 
         public void OnDiffThresholdPlus() {
-            Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT += diffInc;
-            diffText.text = (Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT * 100) + " %";
+            Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT += diffInc;
+            diffText.text = (Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT * 100) + " %";
         }
 
         public void OnDiffThresholdMinus() {
-            Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT -= diffInc;
-            diffText.text = (Constants.SW_SAME_POINT_DIST_THRESHOLD_PERCENT * 100) + " %";
+            Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT -= diffInc;
+            diffText.text = (Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT * 100) + " %";
         }
 
         public List<LevelData> GetAllLevels() {
             return levels;
         }
 
-        public void InstantiateLevel(LevelInfo level) {
-            var monsterPrefab = monsterPrefabs[level.monsterIndex];
-            level.monster = Instantiate(monsterPrefab, transform);
+        public void InstantiateLevel(LevelInfo level, Action onDone) {
+            monster = Instantiate(level.monsterPrefab, transform);
             gameText.text = level.GetReqtString();
+
+            onDone();
         }
 
-        public void DestroyLevel(LevelInfo level) {
-            Destroy(level.monster.gameObject);
+        public void DestroyLevel(LevelInfo level, Action onDone) {
+            Destroy(monster.gameObject);
+            onDone();
+        }
+
+        public void ShowCharacterAnimation(CharacterState state, Action onDone) {
+            // do something with the monster here based on state
+            onDone();
         }
     }
 
@@ -83,7 +91,8 @@ namespace Byjus.RockSalon.Views {
         void CreateCrystal(CrystalType type, Vector2 position, Action<GameObject> onCreateDone);
         void MoveCrystal(GameObject crystalGo, Vector2 newPosition, Action onMoveDone);
         void RemoveCrystal(GameObject crystalGo, Action onRemoveDone);
-        void InstantiateLevel(LevelInfo level);
-        void DestroyLevel(LevelInfo level);
+        void InstantiateLevel(LevelInfo level, Action onDone);
+        void DestroyLevel(LevelInfo level, Action onDone);
+        void ShowCharacterAnimation(CharacterState state, Action onDone);
     }
 }

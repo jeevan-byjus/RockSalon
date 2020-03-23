@@ -62,7 +62,7 @@ namespace Byjus.RockSalon.Tests {
             var objs = osmoVisionService.GetVisionObjects();
             // assert what is expected out of the jsons
 
-            Assert.AreEqual(0, objs.Count);
+            Assert.AreEqual(1, objs.Count);
         }
 
         [UnityTest]

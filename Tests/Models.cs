@@ -11,14 +11,19 @@ namespace Byjus.RockSalon.Tests {
 
     class TestView : IGameManagerView {
         public List<GameObject> crystals;
+        public int numCreate;
+        public int numMove;
+        public int numRemove;
 
         public void Init() {
             crystals = new List<GameObject>();
+            numCreate = 0;
+            numMove = 0;
+            numRemove = 0;
         }
 
         public void TearDown() {
             foreach (var crystal in crystals) {
-                Debug.Log("Destroying  " + crystal);
                 GameObject.Destroy(crystal);
             }
             crystals.Clear();
@@ -28,34 +33,44 @@ namespace Byjus.RockSalon.Tests {
             var go = new GameObject(type + "");
             go.transform.position = position;
             crystals.Add(go);
+            numCreate++;
             onCreateDone(go);
         }
 
         public void MoveCrystal(GameObject crystalGo, Vector2 newPosition, Action onMoveDone) {
             crystalGo.transform.position = newPosition;
+            numMove++;
             onMoveDone();
         }
 
         public void RemoveCrystal(GameObject crystalGo, Action onRemoveDone) {
             crystals.Remove(crystalGo);
+            numRemove++;
             onRemoveDone();
         }
 
         public List<LevelData> GetAllLevels() {
             var ld = ScriptableObject.CreateInstance<LevelData>();
-            ld.monsterIndex = 0;
+            ld.monsterPrefab = null;
             ld.generic = true;
             ld.totalReqt = 20;
 
             return new List<LevelData>() { ld };
         }
 
-        public void InstantiateLevel(LevelInfo level) {
+        public void InstantiateLevel(LevelInfo level, Action onDone) {
             Debug.Log("Instantiating " + level);
+            onDone();
         }
 
-        public void DestroyLevel(LevelInfo level) {
+        public void DestroyLevel(LevelInfo level, Action onDone) {
             Debug.Log("Destroying " + level);
+            onDone();
+        }
+
+        public void ShowCharacterAnimation(CharacterState state, Action onDone) {
+            Debug.Log("showing animation: " + state);
+            onDone();
         }
     }
 
