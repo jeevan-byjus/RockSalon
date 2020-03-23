@@ -29,7 +29,6 @@ namespace Byjus.RockSalon.Tests {
             var vs = new GameObject("VisionService");
             BaseAddGo(vs);
             osmoVisionService = vs.AddComponent<OsmoVisionService>();
-            osmoVisionService.jsonText = text;
             osmoVisionService.Init();
         }
 

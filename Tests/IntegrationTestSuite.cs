@@ -40,7 +40,6 @@ namespace Byjus.RockSalon.Tests {
             go = new GameObject("VisionService");
             BaseAddGo(go);
             osmoVisionService = go.AddComponent<OsmoVisionService>();
-            osmoVisionService.jsonText = text;
             osmoVisionService.Init();
 
             Factory.SetVisionService(osmoVisionService);

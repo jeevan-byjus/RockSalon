@@ -15,13 +15,9 @@ namespace Byjus.RockSalon.Views {
         [SerializeField] GameObject redCrystalPrefab;
         [SerializeField] List<LevelData> levels;
         [SerializeField] Text gameText;
-        [SerializeField] Text epsilonText;
-        [SerializeField] Text diffText;
+        [SerializeField] Text characterText;
 
         GameObject monster;
-
-        const float epsilonInc = 0.05f / 100;
-        const float diffInc = 0.5f / 100;
 
         public IGameManagerCtrl ctrl;
 
@@ -44,26 +40,6 @@ namespace Byjus.RockSalon.Views {
             ctrl.OnSubmitPressed();
         }
 
-        public void OnEpsilonPlus() {
-            Constants.SW_EQUAL_POSITION_DIFF_PERCENT += epsilonInc;
-            epsilonText.text = (Constants.SW_EQUAL_POSITION_DIFF_PERCENT * 100) + " %";
-        }
-
-        public void OnEpsilonMinus() {
-            Constants.SW_EQUAL_POSITION_DIFF_PERCENT -= epsilonInc;
-            epsilonText.text = (Constants.SW_EQUAL_POSITION_DIFF_PERCENT * 100) + " %";
-        }
-
-        public void OnDiffThresholdPlus() {
-            Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT += diffInc;
-            diffText.text = (Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT * 100) + " %";
-        }
-
-        public void OnDiffThresholdMinus() {
-            Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT -= diffInc;
-            diffText.text = (Constants.SW_SAME_POINT_MOVED_DIFF_PERCENT * 100) + " %";
-        }
-
         public List<LevelData> GetAllLevels() {
             return levels;
         }
@@ -82,6 +58,7 @@ namespace Byjus.RockSalon.Views {
 
         public void ShowCharacterAnimation(CharacterState state, Action onDone) {
             // do something with the monster here based on state
+            characterText.text = state.ToString();
             onDone();
         }
     }

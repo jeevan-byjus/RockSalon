@@ -10,55 +10,8 @@ using Osmo.SDK.Vision;
 
 namespace Byjus.RockSalon.Verticals {
     public class OsmoVisionService : MonoBehaviour, IVisionService {
-        [SerializeField] public Text jsonText;
-        [SerializeField] Text xRatioText;
-        [SerializeField] Text yRatioText;
-        [SerializeField] Text epsilonText;
-
         List<string> lastJsons;
         BoundingBox visionBoundingBox;
-        bool jsonVisible;
-
-        float xRatio = 0.8f;
-        float yRatio = 0.8f;
-
-        const float ratioInc = 0.02f;
-        const float epsilonInc = 1f;
-
-        public void ToggleJsonText() {
-            jsonVisible = !jsonVisible;
-            jsonText.gameObject.SetActive(jsonVisible);
-        }
-
-        public void OnXRatioPlus() {
-            xRatio += ratioInc;
-            xRatioText.text = xRatio + "";
-        }
-
-        public void OnXRatioMinus() {
-            xRatio -= ratioInc;
-            xRatioText.text = xRatio + "";
-        }
-
-        public void OnYRatioPlus() {
-            yRatio += ratioInc;
-            yRatioText.text = yRatio + "";
-        }
-
-        public void OnYRatioMinus() {
-            yRatio -= ratioInc;
-            yRatioText.text = yRatio + "";
-        }
-
-        public void OnPointComparePlus() {
-            visionBoundingBox.hwPointCompareEpsilon += epsilonInc;
-            epsilonText.text = visionBoundingBox.hwPointCompareEpsilon + "";
-        }
-
-        public void OnPointCompareMinus() {
-            visionBoundingBox.hwPointCompareEpsilon -= epsilonInc;
-            epsilonText.text = visionBoundingBox.hwPointCompareEpsilon + "";
-        }
 
         public void Init() {
             lastJsons = new List<string>();
@@ -152,8 +105,8 @@ namespace Byjus.RockSalon.Verticals {
 
         Vector2 PosAdjustments(Vector2 screenPoint) {
             // for camera
-            var x = screenPoint.x * xRatio;
-            var y = screenPoint.y * yRatio;
+            var x = screenPoint.x * Constants.CAMERA_ADJUST_X_RATIO;
+            var y = screenPoint.y * Constants.CAMERA_ADJUST_Y_RATIO;
 
             // round off
             x = (float) Math.Round(x, Constants.POSITION_ROUND_OFF_TO_DIGITS);
@@ -224,7 +177,6 @@ namespace Byjus.RockSalon.Verticals {
         public float bottomWidth;
         public float height;
 
-        public float hwPointCompareEpsilon = 5f;
 
         public BoundingBox(List<Vector2> points) {
             topLeftRef = points[0];
@@ -281,8 +233,8 @@ namespace Byjus.RockSalon.Verticals {
         }
 
         public bool PositionEquals(Vector2 point1, Vector2 point2) {
-            return Mathf.Abs(point1.x - point2.x) < hwPointCompareEpsilon &&
-                Mathf.Abs(point1.y - point2.y) < hwPointCompareEpsilon;
+            return Mathf.Abs(point1.x - point2.x) < Constants.HW_POINT_COMPARE_EPSILON &&
+                Mathf.Abs(point1.y - point2.y) < Constants.HW_POINT_COMPARE_EPSILON;
         }
     }
 }

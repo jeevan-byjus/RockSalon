@@ -9,6 +9,9 @@ namespace Byjus.RockSalon.Util {
 
         public const int ITEM_DETECTION_FRAME_THRESHOLD = 3;
         public const int INPUT_FRAME_COUNT = 3;
+        public static float CAMERA_ADJUST_X_RATIO = 0.8f;
+        public static float CAMERA_ADJUST_Y_RATIO = 0.8f;
+        public static float HW_POINT_COMPARE_EPSILON = 5f;
 
         public const int POSITION_ROUND_OFF_TO_DIGITS = 4;
     }
